@@ -21,4 +21,16 @@ services:
         - neo4j
         links: 
         - neo4j
-        
+    application:
+        container_name: application
+        build: 
+            context: .
+            dockerfile: ./Dockerfile.application
+        environment: 
+        - USER=neo4j
+        - PASSWORD=test
+        - ADDRESS=neo4j://neo4j:7687
+        depends_on: 
+        - neo4j
+        links: 
+        - neo4j

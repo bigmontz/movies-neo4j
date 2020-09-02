@@ -1,0 +1,16 @@
+# Build
+FROM openjdk:11 as build
+WORKDIR /usr/src/app
+
+COPY src src
+COPY pom.xml .
+COPY mvnw .
+COPY  .mvn .mvn
+RUN chmod +x ./mvnw
+RUN ./mvnw clean install
+
+# Run
+FROM openjdk:11
+COPY --from=build /usr/src/app/target/*.jar /usr/app/server.jar 
+EXPOSE 8080
+ENTRYPOINT ["java","-jar","/usr/app/server.jar"]
