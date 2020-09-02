@@ -26,6 +26,8 @@ services:
         build: 
             context: .
             dockerfile: ./Dockerfile.application
+        ports:
+            - 8080:8080
         environment: 
         - NEO4J_USERNAME=neo4j
         - NEO4J_PASSWORD=test
