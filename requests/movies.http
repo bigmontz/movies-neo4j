@@ -1,0 +1,2 @@
+### Getting cast
+GET http://localhost:8080/movie/cast?movieName=The%20Matrix%20Reloaded
