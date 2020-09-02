@@ -10,7 +10,7 @@ Build:
 
 Run the project:
 
-```docker-compose up -d neo4j```
+```docker-compose up -d neo4j application```
 
 Upload dataset:
 
