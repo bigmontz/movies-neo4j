@@ -14,21 +14,33 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
 
     override fun execute(input: GetPeopleRelatedToMovie.Input): GetPeopleRelatedToMovie.Output =
             driver.session().readTransaction { tx ->
-                LOG.info("Getting people related to the movie ${input.movieName}")
-                val actors = tx.run(
-                            "MATCH (p:Person)-[r]->(m:Movie {title: \$movieName}) " +
-                                    "WHERE type(r) IN \$relationships " +
-                                    "RETURN p.name as name, p.born as born, type(r) as relationship",
-                            mapOf(Pair("movieName", input.movieName), Pair("relationships", input.relationships.map { it.name })))
+                LOG.info("Getting people related ${input.relationships} to the movie ${input.movieName}")
+
+                val query = """
+                                MATCH (p:Person)-[r]->(m:Movie {title: $movieName})
+                                WHERE type(r) IN $relationship
+                                RETURN p.name as name, p.born as born, type(r) as relationship
+                            """.trimIndent()
+
+                val params = mapOf(
+                        movieName.fromValue(input.movieName),
+                        relationship.fromValue(input.relationships.map { it.name }))
+
+                val actors = tx.run(query, params)
                         .list()
-                        .map { node -> Pair(
-                                Relationship.valueOf(node.get("relationship").asString()),
-                                Person(node.get("name").asString(), node.get("born").asInt())) }
-                
+                        .map { record ->
+                            Pair(
+                                    record.get(relationship), Person(record.get(name), record.get(born)))
+                        }
+
                 return@readTransaction GetPeopleRelatedToMovie.Output(actors)
             }
 
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GetPeopleRelatedToMovieService::class.java)
+        val relationship = EnumFieldDef("relationship", Relationship::valueOf)
+        val movieName = StringFieldDef("movieName")
+        val name = StringFieldDef("name")
+        val born = IntFieldDef("born")
     }
 }
