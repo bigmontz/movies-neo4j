@@ -3,6 +3,7 @@ package com.neo4j.movies
 import org.neo4j.driver.AuthTokens
 import org.neo4j.driver.Driver
 import org.neo4j.driver.GraphDatabase
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -32,7 +33,7 @@ class MoviesApplication
 	}
 
 	companion object {
-		val LOG = LoggerFactory.getLogger(MoviesApplication.javaClass)
+		val LOG: Logger = LoggerFactory.getLogger(MoviesApplication::class.java)
 	}
 
 }
