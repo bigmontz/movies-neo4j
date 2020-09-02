@@ -1,0 +1,9 @@
+FROM neo4j:latest
+
+ARG ADDRESS
+ARG USER
+ARG PASSWORD
+
+COPY ./dataset/* /var/lib/neo4j/import/
+
+CMD cat /var/lib/neo4j/import/*.cypher | cypher-shell -a $ADDRESS -u $USER -p $PASSWORD

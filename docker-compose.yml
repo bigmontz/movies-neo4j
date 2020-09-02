@@ -1,10 +1,24 @@
-version: '2.0'
+version: '2.4'
 services: 
     neo4j:
-        image: neo4j
         container_name: neo4j
+        image: neo4j
         environment: 
         - NEO4J_AUTH=neo4j/test
         ports: 
         - 7474:7474
         - 7687:7687
+    dataset:
+        container_name: dataset
+        build: 
+            context: .
+            dockerfile: ./Dockerfile.dataset
+        environment: 
+        - USER=neo4j
+        - PASSWORD=test
+        - ADDRESS=neo4j://neo4j:7687
+        depends_on: 
+        - neo4j
+        links: 
+        - neo4j
+        
