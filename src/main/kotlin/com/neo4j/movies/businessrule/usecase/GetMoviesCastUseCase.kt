@@ -11,11 +11,9 @@ class GetMoviesCastUseCase(private val getPeopleRelatedToMovie: GetPeopleRelated
 
     override fun execute(input: Input): Output {
         val cast = getPeopleRelatedToMovie.execute(GetPeopleRelatedToMovie.Input(movieName = input.movieName, relationships = Job.CAST_RELATIONSHIPS))
-                .relatedPeople.stream()
+                .relatedPeople
                 .map { CastElement(it.second, Job.fromRelationship(it.first)!! ) }
-                .collect(Collectors.toList())
-
-        return Output(cast);
+        return Output(cast)
     }
 
     data class Input(val movieName :String)

@@ -8,7 +8,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import java.util.stream.Collectors
 
 @Service
 class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : GetPeopleRelatedToMovie {
@@ -16,13 +15,16 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
     override fun execute(input: GetPeopleRelatedToMovie.Input): GetPeopleRelatedToMovie.Output =
             driver.session().readTransaction { tx ->
                 LOG.info("Getting people related to the movie ${input.movieName}")
-                val actors = tx.run("MATCH (p:Person)-[r:ACTED_IN]->(m:Movie {title: \$movieName}) return p",
-                        mapOf(Pair("movieName", input.movieName)))
+                val actors = tx.run(
+                            "MATCH (p:Person)-[r]->(m:Movie {title: \$movieName}) " +
+                                    "WHERE type(r) IN \$relationships " +
+                                    "RETURN p.name as name, p.born as born, type(r) as relationship",
+                            mapOf(Pair("movieName", input.movieName), Pair("relationships", input.relationships.map { it.name })))
                         .list()
-                        .stream()
-                        .map { record -> record.get("p").asNode() }
-                        .map { node -> Pair(Relationship.ACTED_IN, Person(node.get("name").asString(), node.get("born").asInt())) }
-                        .collect(Collectors.toList())
+                        .map { node -> Pair(
+                                Relationship.valueOf(node.get("relationship").asString()),
+                                Person(node.get("name").asString(), node.get("born").asInt())) }
+                
                 return@readTransaction GetPeopleRelatedToMovie.Output(actors)
             }
 
