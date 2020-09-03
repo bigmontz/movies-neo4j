@@ -3,6 +3,7 @@ package com.neo4j.movies.service
 import com.neo4j.movies.businessrule.entity.Person
 import com.neo4j.movies.businessrule.entity.Relationship
 import com.neo4j.movies.businessrule.provider.GetPeopleRelatedToMovie
+import com.neo4j.movies.service.database.*
 import org.neo4j.driver.Driver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -17,20 +18,20 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
                 LOG.info("Getting people related ${input.relationships} to the movie ${input.movieName}")
 
                 val query = """
-                                MATCH (p:Person)-[r]->(m:Movie {title: $movieName})
-                                WHERE type(r) IN $relationship
-                                RETURN p.name as name, p.born as born, type(r) as relationship
+                                MATCH ($PERSON)-[r]->($MOVIE {title: $MOVIE_TITLE })
+                                WHERE type(r) IN $RELATIONSHIP
+                                RETURN ${PERSON.alias}.name as name, ${PERSON.alias}.born as born, type(r) as relationship
                             """.trimIndent()
 
                 val params = mapOf(
-                        movieName.fromValue(input.movieName),
-                        relationship.fromValue(input.relationships.map { it.name }))
+                        MOVIE_TITLE.fromValue(input.movieName),
+                        RELATIONSHIP.fromValue(input.relationships.map { it.name }))
 
                 val actors = tx.run(query, params)
                         .list()
                         .map { record ->
                             Pair(
-                                    record.get(relationship), Person(record.get(name), record.get(born)))
+                                    record.get(RELATIONSHIP), Person(record.get(PERSON_NAME), record.get(PERSON_BORN)))
                         }
 
                 return@readTransaction GetPeopleRelatedToMovie.Output(actors)
@@ -38,9 +39,5 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
 
     companion object {
         val LOG: Logger = LoggerFactory.getLogger(GetPeopleRelatedToMovieService::class.java)
-        val relationship = EnumFieldDef("relationship", Relationship::valueOf)
-        val movieName = StringFieldDef("movieName")
-        val name = StringFieldDef("name")
-        val born = IntFieldDef("born")
     }
 }

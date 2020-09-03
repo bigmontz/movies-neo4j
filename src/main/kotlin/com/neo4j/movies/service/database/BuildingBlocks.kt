@@ -1,4 +1,4 @@
-package com.neo4j.movies.service
+package com.neo4j.movies.service.database
 
 import org.neo4j.driver.Record
 import org.neo4j.driver.Value
@@ -12,9 +12,19 @@ open class FieldDef(val name: String) {
     }
 }
 
-class StringFieldDef(name: String) : FieldDef(name)
-class IntFieldDef(name: String) : FieldDef(name)
-class EnumFieldDef<E : Enum<E>>(name: String, val valueOf: (String) -> E): FieldDef(name)
+open class NodeDef(val name: String, val alias : String) {
+
+    fun withAlias(alias: String): NodeDef = NodeDef(name, alias)
+
+    override fun toString(): String {
+        return "$alias:$name"
+    }
+
+}
+
+open class StringFieldDef(name: String) : FieldDef(name)
+open class IntFieldDef(name: String) : FieldDef(name)
+open class EnumFieldDef<E : Enum<E>>(name: String, val valueOf: (String) -> E): FieldDef(name)
 
 fun Record.get(fieldDef: FieldDef): Value = this.get(fieldDef.name)
 fun Record.get(fieldDef: StringFieldDef): String = this.get(fieldDef.name).asString()
