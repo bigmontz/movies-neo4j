@@ -11,3 +11,6 @@ Content-Type: application/json
     "personBorn": 1999,
     "job": "ACTOR"
 }
+
+### Getting health
+GET http://localhost:8080/actuator/health

@@ -12,5 +12,13 @@ RUN ./mvnw clean install
 # Run
 FROM openjdk:11
 COPY --from=build /usr/src/app/target/*.jar /usr/app/server.jar 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl jq \
+ && rm -rf /var/lib/apt/lists/*
+
 EXPOSE 8080
 ENTRYPOINT ["java","-jar","/usr/app/server.jar"]
+
+HEALTHCHECK --start-period=5s --interval=20s --timeout=10s --retries=10 \
+            CMD curl --silent --fail --request GET http://localhost:8080/app/actuator/health \
+                | jq --exit-status '.status == "UP"' || exit 1

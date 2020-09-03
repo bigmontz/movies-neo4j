@@ -8,13 +8,17 @@ Build:
 
 ```docker-compose build```
 
-Run the project:
+Run the project without upload dataset:
 
 ```docker-compose up -d neo4j application```
 
 Upload dataset:
 
 ```docker-compose up dataset```
+
+Run the project and upload dataset:
+
+```docker-compose -f docker-compose.yml -f docker-compose.dataset.yml up -d```
 
 Stop the service
 
