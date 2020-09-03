@@ -3,15 +3,11 @@ package com.neo4j.movies.service
 import com.neo4j.movies.businessrule.provider.GetPersonByName
 import com.neo4j.movies.service.database.PERSON
 import com.neo4j.movies.service.database.get
-import com.neo4j.movies.service.database.syncReadTransaction
-import org.neo4j.driver.Driver
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
+import org.neo4j.driver.Transaction
 
-@Service
-class GetPersonByNameService(@Autowired val driver: Driver) : GetPersonByName {
+class GetPersonByNameService(private val tx: Transaction) : GetPersonByName {
 
-    override fun execute(input: GetPersonByName.Input): GetPersonByName.Output = driver.syncReadTransaction { tx ->
+    override fun execute(input: GetPersonByName.Input): GetPersonByName.Output {
         val query = """
             MATCH ${PERSON.withProps(PERSON.NAME)} 
             RETURN ${PERSON.alias}
@@ -19,7 +15,7 @@ class GetPersonByNameService(@Autowired val driver: Driver) : GetPersonByName {
 
         val param = mapOf(PERSON.NAME.fromValue(input.name))
         val person = tx.run(query, param).list().map { it.get(PERSON) }.firstOrNull()
-        GetPersonByName.Output(person)
+        return GetPersonByName.Output(person)
     }
 
 }

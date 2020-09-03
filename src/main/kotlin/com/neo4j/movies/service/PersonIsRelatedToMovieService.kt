@@ -4,14 +4,11 @@ import com.neo4j.movies.businessrule.provider.PersonIsRelatedToMovie
 import com.neo4j.movies.service.database.MOVIE
 import com.neo4j.movies.service.database.PERSON
 import com.neo4j.movies.service.database.RELATIONSHIP
-import com.neo4j.movies.service.database.syncReadTransaction
-import org.neo4j.driver.Driver
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Service
+import org.neo4j.driver.Session
+import org.neo4j.driver.Transaction
 
-@Service
-class PersonIsRelatedToMovieService (@Autowired private val driver: Driver): PersonIsRelatedToMovie {
-    override fun execute(input: PersonIsRelatedToMovie.Input): PersonIsRelatedToMovie.Output = driver.syncReadTransaction { tx ->
+class PersonIsRelatedToMovieService (private val tx: Transaction): PersonIsRelatedToMovie {
+    override fun execute(input: PersonIsRelatedToMovie.Input): PersonIsRelatedToMovie.Output {
         val query = """
             MATCH ${PERSON.withProps(PERSON.NAME)} -[r]-> ${MOVIE.withProps(MOVIE.TITLE)} 
             WHERE type(r) = ${RELATIONSHIP.param}
@@ -19,7 +16,7 @@ class PersonIsRelatedToMovieService (@Autowired private val driver: Driver): Per
         """.trimIndent()
         val params = mapOf(PERSON.NAME.fromValue(input.personName), MOVIE.TITLE.fromValue(input.movieName), RELATIONSHIP.fromValue(input.relationship.name))
         val isRelated = tx.run(query, params).hasNext()
-        PersonIsRelatedToMovie.Output(isRelated)
+        return PersonIsRelatedToMovie.Output(isRelated)
     }
 
 }
