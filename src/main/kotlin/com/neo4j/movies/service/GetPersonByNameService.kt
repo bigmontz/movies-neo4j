@@ -12,7 +12,7 @@ class GetPersonByNameService(@Autowired val driver: Driver) : GetPersonByName {
 
     override fun execute(input: GetPersonByName.Input): GetPersonByName.Output = driver.session().readTransaction { tx ->
         val query = """
-            MATCH (${PERSON} { ${PERSON.NAME.eq}})
+            MATCH (${PERSON} { ${PERSON.NAME.prop}})
             RETURN ${PERSON.alias}
         """.trimIndent()
 

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 class PersonIsRelatedToMovieService (@Autowired private val driver: Driver): PersonIsRelatedToMovie {
     override fun execute(input: PersonIsRelatedToMovie.Input): PersonIsRelatedToMovie.Output = driver.session().readTransaction { tx ->
         val query = """
-            MATCH (${PERSON} { ${PERSON.NAME.eq} } ) -[r]-> (${MOVIE} { ${MOVIE.TITLE.eq} }) 
+            MATCH (${PERSON} { ${PERSON.NAME.prop} } ) -[r]-> (${MOVIE} { ${MOVIE.TITLE.prop} }) 
             WHERE type(r) = ${RELATIONSHIP.param}
             RETURN type(r)
         """.trimIndent()

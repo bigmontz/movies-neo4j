@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 class GetMovieByNameService (@Autowired private val driver: Driver) : GetMovieByName {
     override fun execute(input: GetMovieByName.Input): GetMovieByName.Output = driver.session().readTransaction { tx ->
         val query = """
-            MATCH ($MOVIE { ${MOVIE.TITLE.eq} }) 
+            MATCH ($MOVIE { ${MOVIE.TITLE.prop} }) 
             RETURN ${MOVIE.alias}
         """.trimIndent()
         val params = mapOf(MOVIE.TITLE.fromValue(input.name))
