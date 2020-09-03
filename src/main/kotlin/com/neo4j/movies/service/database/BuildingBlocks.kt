@@ -30,9 +30,17 @@ open class NodeDef(val name: String, val alias : String) {
 
 }
 
-abstract class  DataNodeDef<T>(name: String, alias: String) : NodeDef(name, alias) {
+abstract class DataNodeDef<T>(name: String, alias: String) : NodeDef(name, alias) {
 
     abstract fun transform(node: Node) : T
+}
+
+open class RelationshipDef(val name: String, val alias: String) {
+    fun withAlias(alias: String): RelationshipDef = RelationshipDef(name, alias)
+
+    override fun toString(): String {
+        return "$alias:$name"
+    }
 }
 
 open class StringFieldDef(name: String) : FieldDef(name)
