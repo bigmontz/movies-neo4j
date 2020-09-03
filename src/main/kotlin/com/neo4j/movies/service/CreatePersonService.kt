@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service
 class CreatePersonService(@Autowired private val driver: Driver) : CreatePerson {
     override fun execute(input: CreatePerson.Input): Unit = driver.session().writeTransaction { tx ->
         val query = """
-            CREATE (${PERSON} { ${PERSON.NAME.prop}, ${PERSON.BORN.prop} })
+            CREATE ${PERSON.withProps(PERSON.NAME, PERSON.BORN)} 
         """.trimIndent()
         val param = mapOf(PERSON.NAME.fromValue(input.person.name), PERSON.BORN.fromValue(input.person.born))
         tx.run(query, param)

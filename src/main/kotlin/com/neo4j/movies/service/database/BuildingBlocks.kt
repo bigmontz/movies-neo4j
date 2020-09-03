@@ -19,6 +19,11 @@ open class NodeDef(val name: String, val alias : String) {
 
     fun withAlias(alias: String): NodeDef = NodeDef(name, alias)
 
+    fun withProps(vararg fields: FieldDef): String {
+        val props = fields.joinToString { it.prop }
+        return "($this { $props })"
+    }
+
     override fun toString(): String {
         return "$alias:$name"
     }
