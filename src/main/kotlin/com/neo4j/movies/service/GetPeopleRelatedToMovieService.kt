@@ -1,9 +1,10 @@
 package com.neo4j.movies.service
 
-import com.neo4j.movies.businessrule.entity.Person
-import com.neo4j.movies.businessrule.entity.Relationship
 import com.neo4j.movies.businessrule.provider.GetPeopleRelatedToMovie
-import com.neo4j.movies.service.database.*
+import com.neo4j.movies.service.database.MOVIE
+import com.neo4j.movies.service.database.PERSON
+import com.neo4j.movies.service.database.RELATIONSHIP
+import com.neo4j.movies.service.database.get
 import org.neo4j.driver.Driver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -18,20 +19,19 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
                 LOG.info("Getting people related ${input.relationships} to the movie ${input.movieName}")
 
                 val query = """
-                                MATCH ($PERSON)-[r]->($MOVIE {title: $MOVIE_TITLE })
+                                MATCH ($PERSON)-[r]->($MOVIE {title: ${MOVIE.TITLE} })
                                 WHERE type(r) IN $RELATIONSHIP
-                                RETURN ${PERSON.alias}.name as name, ${PERSON.alias}.born as born, type(r) as relationship
+                                RETURN ${PERSON.alias}, type(r) as relationship
                             """.trimIndent()
 
                 val params = mapOf(
-                        MOVIE_TITLE.fromValue(input.movieName),
+                        MOVIE.TITLE.fromValue(input.movieName),
                         RELATIONSHIP.fromValue(input.relationships.map { it.name }))
 
                 val actors = tx.run(query, params)
                         .list()
                         .map { record ->
-                            Pair(
-                                    record.get(RELATIONSHIP), Person(record.get(PERSON_NAME), record.get(PERSON_BORN)))
+                            Pair(record.get(RELATIONSHIP), record.get(PERSON))
                         }
 
                 return@readTransaction GetPeopleRelatedToMovie.Output(actors)

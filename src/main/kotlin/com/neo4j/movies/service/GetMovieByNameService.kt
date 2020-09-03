@@ -1,18 +1,22 @@
 package com.neo4j.movies.service
 
-import com.neo4j.movies.businessrule.entity.Movie
 import com.neo4j.movies.businessrule.provider.GetMovieByName
+import com.neo4j.movies.service.database.MOVIE
+import com.neo4j.movies.service.database.get
 import org.neo4j.driver.Driver
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 class GetMovieByNameService (@Autowired private val driver: Driver) : GetMovieByName {
-    override fun execute(input: GetMovieByName.Input): GetMovieByName.Output {
+    override fun execute(input: GetMovieByName.Input): GetMovieByName.Output = driver.session().readTransaction { tx ->
         val query = """
-            MATCH (movie:Movie {title: "The Matrix Reloaded"}) 
-            RETURN movie
+            MATCH ($MOVIE {title: ${MOVIE.TITLE}}) 
+            RETURN ${MOVIE.alias}
         """.trimIndent()
-        return GetMovieByName.Output(Movie(input.name))
+        val params = mapOf(MOVIE.TITLE.fromValue(input.name))
+        val movie = tx.run(query, params).list().map { it.get(MOVIE) }.firstOrNull()
+        GetMovieByName.Output(movie)
     }
+
 }
