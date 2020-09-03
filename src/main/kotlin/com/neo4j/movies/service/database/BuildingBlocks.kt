@@ -5,11 +5,13 @@ import org.neo4j.driver.Value
 import org.neo4j.driver.types.Node
 
 open class FieldDef(val name: String) {
+    val eq : String by lazy { "$this: ${this.param}" }
+    val param : String by lazy { "\$$name"  }
 
     fun fromValue(value: Any) : Pair<String, Any> = Pair(name, value)
 
     override fun toString(): String {
-        return "\$$name"
+        return name
     }
 }
 

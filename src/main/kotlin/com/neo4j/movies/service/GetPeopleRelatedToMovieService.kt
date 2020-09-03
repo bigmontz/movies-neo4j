@@ -19,8 +19,8 @@ class GetPeopleRelatedToMovieService(@Autowired private val driver: Driver) : Ge
                 LOG.info("Getting people related ${input.relationships} to the movie ${input.movieName}")
 
                 val query = """
-                                MATCH ($PERSON)-[r]->($MOVIE {title: ${MOVIE.TITLE} })
-                                WHERE type(r) IN $RELATIONSHIP
+                                MATCH ($PERSON)-[r]->($MOVIE { ${MOVIE.TITLE.eq} })
+                                WHERE type(r) IN ${RELATIONSHIP.param}
                                 RETURN ${PERSON.alias}, type(r) as relationship
                             """.trimIndent()
 
