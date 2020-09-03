@@ -19,3 +19,10 @@ Upload dataset:
 Stop the service
 
 ```docker-compose down```
+
+Alternativetly, the project could runned using:
+
+```docker-compose up -d neo4j``` to start the database
+```./mvnw spring-boot:run``` to build and run the application
+
+It's usefull for development.
