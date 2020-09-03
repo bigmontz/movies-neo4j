@@ -1,2 +1,13 @@
 ### Getting cast
 GET http://localhost:8080/movie/cast?movieName=The%20Matrix%20Reloaded
+
+### Add cast
+PUT http://localhost:8080/movie/cast
+Content-Type: application/json
+
+{
+    "movieName": "The Matrix Reloaded",
+    "personName": "Antonio Barcélos",
+    "personBorn": 1999,
+    "job": "ACTOR"
+}

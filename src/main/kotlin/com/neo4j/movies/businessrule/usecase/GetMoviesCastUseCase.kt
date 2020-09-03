@@ -3,8 +3,6 @@ package com.neo4j.movies.businessrule.usecase
 import com.neo4j.movies.businessrule.entity.CastElement
 import com.neo4j.movies.businessrule.entity.Job
 import com.neo4j.movies.businessrule.provider.GetPeopleRelatedToMovie
-import java.util.stream.Collectors
-
 
 class GetMoviesCastUseCase(private val getPeopleRelatedToMovie: GetPeopleRelatedToMovie)
     : UseCase<GetMoviesCastUseCase.Input, GetMoviesCastUseCase.Output> {
