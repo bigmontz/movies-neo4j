@@ -1,7 +1,10 @@
 package com.neo4j.driver
 
+import com.neo4j.driver.messenger.MessengerReader
+import com.neo4j.driver.messenger.MessengerWriter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.RuntimeException
 import java.net.Socket
 
 class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
@@ -24,14 +27,22 @@ class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
 
     private fun hello(user: String, password: String) {
         val credentials = mapOf(
-                "user_agent" to "movies/1",
+                "user_agent" to "movies\\1.0",
                 "scheme" to "basic",
                 "principal" to user,
                 "credentials" to password)
 
-        writer.write(HELLO, credentials)
+        writer.write(MessageTags.HELLO, credentials)
 
-        val response = reader.read()
+        val (tag, fields) = reader.read()
+
+        if(tag != MessageTags.SUCCESS) {
+            throw RuntimeException("Error during the login, connection DEFUNCT")
+        } else if (fields.isEmpty()) {
+            throw RuntimeException("Unauthorized user")
+        }
+        
+        LOG.info("$tag, ${fields.first()}")
     }
 
     private fun sendOverTheWire(byteArray: ByteArray) {
@@ -50,11 +61,8 @@ class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
         LOG.info("Connection closed")
     }
 
-    private fun ByteArray.str(): String = this.joinToString(separator = "") { "\\x${ String.format("%02X", it) }" }
-
     companion object {
         val LOG : Logger = LoggerFactory.getLogger(Bolt::class.java)
-        private const val HELLO: Int = 0x01
     }
 
 }

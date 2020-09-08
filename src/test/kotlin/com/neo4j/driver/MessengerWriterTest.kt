@@ -1,5 +1,6 @@
 package com.neo4j.driver
 
+import com.neo4j.driver.messenger.MessengerWriter
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
