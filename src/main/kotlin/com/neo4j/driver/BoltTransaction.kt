@@ -10,7 +10,7 @@ class BoltTransaction(
 ) : Transaction {
 
     override fun run(query: String?, params: MutableMap<String, Any>?): Result {
-        writer.write(MessageTags.RUN, query!!, params!!)
+        writer.write(MessageTags.RUN, query!!, params!!, mapOf<String, Any>())
         val (code, fields) = reader.read()
         println("$code => $fields")
         TODO("Not yet implemented :D")

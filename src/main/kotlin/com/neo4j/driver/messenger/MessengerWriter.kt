@@ -30,9 +30,9 @@ class MessengerWriter(
     }
 
     private fun writeInChunks(byteArray: ByteArray) {
-        for (offset in 0..byteArray.size step CHUNK_SIZE) {
-            val end = if (offset + CHUNK_SIZE < byteArray.size) CHUNK_SIZE + 32767 else byteArray.size - 1
-            val chunk = byteArray.slice(offset..end).toByteArray()
+        for (offset in byteArray.indices step CHUNK_SIZE) {
+            val end = if (offset + CHUNK_SIZE <= byteArray.size) CHUNK_SIZE + 32767 else byteArray.size
+            val chunk = byteArray.sliceArray(offset until end)
             writeChunk(chunk)
         }
     }

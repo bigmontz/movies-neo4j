@@ -17,7 +17,9 @@ class Packer {
 
     private fun packMap(map: Map<String, Any>): ByteArray {
         val header = header(map.size, MapMarker)
-        val encoded = map.map { packString(it.key) + pack(it.value) }.reduce { acc, bytes -> acc + bytes }
+        val encoded = if (map.isNotEmpty())
+                map.map { packString(it.key) + pack(it.value) }.reduce { acc, bytes -> acc + bytes }
+        else byteArrayOf()
         return header + encoded
     }
 
@@ -29,7 +31,6 @@ class Packer {
 
     private fun packString(str: String) : ByteArray {
         val encoded = Charsets.UTF_8.encode(str).array().filter { it.toInt() != 0x00 }
-        println("String $str size ${encoded.size}")
         val header = header(encoded.size, StringMarker)
         return header + encoded
     }
@@ -42,7 +43,6 @@ class Packer {
     }
 
     private fun packU8(int: Int): ByteArray  {
-        println("value ${int}")
         return byteArrayOf(int.toUInt().toByte())
     }
 
