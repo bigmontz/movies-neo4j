@@ -2,6 +2,7 @@ package com.neo4j.driver
 
 import com.neo4j.driver.messenger.MessengerReader
 import com.neo4j.driver.messenger.MessengerWriter
+import org.neo4j.driver.Transaction
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.RuntimeException
@@ -18,6 +19,11 @@ class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
         val version = handshake()
         LOG.info("Connected with version $version")
         hello(credentials.user, credentials.password)
+    }
+
+    fun <T> withAutoCommitTransaction(consumer : (Transaction) -> T) : T {
+        val transaction = BoltTransaction(writer, reader)
+        return consumer(transaction)
     }
 
     private fun handshake(): Pair<Int, Int> {

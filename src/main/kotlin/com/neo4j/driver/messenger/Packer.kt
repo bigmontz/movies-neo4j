@@ -2,6 +2,7 @@ package com.neo4j.driver.messenger
 
 import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
+import java.util.ArrayList
 
 
 class Packer {
@@ -10,7 +11,8 @@ class Packer {
         is Short -> packU16(any)
         is String -> packString(any)
         is Map<*, *> -> packMap(any as Map<String, Any>)
-        else -> throw UnsupportedOperationException()
+        is ArrayList<*> -> packList(any as ArrayList<Any>)
+        else -> throw UnsupportedOperationException("The value $any is not supported. Type ${any.javaClass}")
     }
 
     private fun packMap(map: Map<String, Any>): ByteArray {
@@ -19,8 +21,15 @@ class Packer {
         return header + encoded
     }
 
+    private fun packList(list: ArrayList<Any>): ByteArray {
+        val header = header(list.size, ListMarker)
+        val encoded = list.map { pack(it) }.reduce { acc, bytes -> acc + bytes  }
+        return header + encoded
+    }
+
     private fun packString(str: String) : ByteArray {
         val encoded = Charsets.UTF_8.encode(str).array().filter { it.toInt() != 0x00 }
+        println("String $str size ${encoded.size}")
         val header = header(encoded.size, StringMarker)
         return header + encoded
     }
@@ -32,7 +41,10 @@ class Packer {
         SizeCategory.LARGE -> packU8(marker.large) + packI32(size)
     }
 
-    private fun packU8(int: Int): ByteArray = byteArrayOf(int.toUInt().toByte())
+    private fun packU8(int: Int): ByteArray  {
+        println("value ${int}")
+        return byteArrayOf(int.toUInt().toByte())
+    }
 
     private fun packU16(short: Short): ByteArray = ByteBuffer.allocate(Short.SIZE_BYTES).putShort(short).array()
 

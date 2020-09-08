@@ -12,6 +12,7 @@ open class Marker (val tiny: Int, val small: Int, val medium: Int, val large: In
 
 object StringMarker: Marker(tiny = 0x80, small = 0xD0, medium = 0xD1, large = 0xD2)
 object MapMarker: Marker(tiny = 0xA0, small = 0xD8, medium = 0xD9, large = 0xDA)
+object ListMarker: Marker(tiny = 0x90, small = 0xD4, medium = 0xD5, large = 0xD6)
 
 enum class SizeCategory {
     TINY, SMALL, MEDIUM, LARGE;

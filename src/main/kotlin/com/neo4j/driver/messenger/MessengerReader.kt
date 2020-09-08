@@ -24,7 +24,11 @@ class MessengerReader(private val read: (Int) -> ByteArray, private val unPacker
     }
 
     private fun readChunk(): ByteArray? {
-        val size = unPacker.unpackU16(read(2))
+        val sizeByteArray = read(2)
+        if(sizeByteArray.filter { it.toInt() != 0x00 }.isEmpty()) {
+            return readChunk()
+        }
+        val size = unPacker.unpackU16(sizeByteArray)
         return if (size > 0) read(size.toInt()) else null
     }
 }
