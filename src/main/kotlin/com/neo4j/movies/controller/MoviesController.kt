@@ -1,6 +1,7 @@
 package com.neo4j.movies.controller
 
 import com.neo4j.driver.Bolt
+import com.neo4j.driver.Credentials
 import com.neo4j.movies.businessrule.usecase.AddCastToMovieUseCase
 import com.neo4j.movies.businessrule.usecase.GetMoviesCastUseCase
 import com.neo4j.movies.configuration.UseCaseConfig
@@ -27,7 +28,8 @@ class MoviesController(@Autowired private val driver: Driver, @Autowired private
     }
 
     @GetMapping("test")
-    fun test() = Bolt("localhost", 7687).use {
+    fun test() = Bolt("localhost", 7687, Credentials("neo4j", "test")).use {
+
     }
 
 
