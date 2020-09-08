@@ -4,8 +4,6 @@ import java.io.ByteArrayOutputStream
 import java.lang.IllegalArgumentException
 import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
-import java.util.*
-import java.util.stream.Stream
 
 private val DEFAULT_VERSIONS: List<Pair<Int, Int>>
         = listOf(Pair(0, 0), Pair(0, 0), Pair(0, 0), Pair(0, 0))
@@ -30,12 +28,30 @@ class MessengerWriter(
         write(buffer.toByteArray())
     }
 
-    fun write(tag: Int, fields: Map<String, String>) {
+    fun write(tag: Int, vararg fields: Any) {
         val buffer = ByteArrayOutputStream()
         buffer.write(0xB0 + fields.size)
         buffer.write(tag)
-        buffer.write(packer.pack(fields))
-        write(buffer.toByteArray())
+        fields.forEach { buffer.write(packer.pack(it)) }
+        writeInChunks(buffer.toByteArray())
+    }
+
+    private fun writeInChunks(byteArray: ByteArray) {
+        for (offset in 0..byteArray.size step CHUNK_SIZE) {
+            val end = if (offset + CHUNK_SIZE < byteArray.size) CHUNK_SIZE + 32767 else byteArray.size - 1
+            val chunk = byteArray.slice(offset..end).toByteArray()
+            writeChunk(chunk)
+        }
+    }
+
+    private fun writeChunk(chunk: ByteArray) {
+        write(packer.pack(chunk.size.toShort()))
+        write(chunk)
+        write(byteArrayOf(0x00, 0x00))
+    }
+
+    companion object {
+        private const val CHUNK_SIZE: Int = 32767
     }
 }
 
@@ -62,6 +78,7 @@ class MessengerReader(private val read: (Int) -> ByteArray, private val packer: 
 class Packer {
 
     fun pack(any: Any): ByteArray = when(any) {
+        is Short -> packU16(any)
         is String -> packString(any)
         is Map<*, *> -> packMap(any as Map<String, Any>)
         else -> throw UnsupportedOperationException()
@@ -70,17 +87,14 @@ class Packer {
     fun unpackU16(byteArray: ByteArray): Short = ByteBuffer.wrap(byteArray).getShort(0)
 
     private fun packMap(map: Map<String, Any>): ByteArray {
-        val header = header(map.size, StringMarker)
+        val header = header(map.size, MapMarker)
         val encoded = map.map { packString(it.key) + pack(it.value) }.reduce { acc, bytes -> acc + bytes }
         return header + encoded
     }
 
     private fun packString(str: String) : ByteArray {
         val encoded = Charsets.UTF_8.encode(str).array()
-        println(encoded.joinToString(separator = "") { String.format("\\x%02X", it) } )
-        val decoded = String(encoded, charset("UTF-8"))
-        println(decoded)
-        val header = header(encoded.size, MapMarker)
+        val header = header(encoded.size, StringMarker)
         return header + encoded
     }
 
@@ -93,7 +107,9 @@ class Packer {
 
     private fun packU8(int: Int): ByteArray = byteArrayOf(int.toUInt().toByte())
 
-    private fun packU16(int: Int): ByteArray = ByteBuffer.allocate(Short.SIZE_BYTES).putShort(int.toShort()).array()
+    private fun packU16(short: Short): ByteArray = ByteBuffer.allocate(Short.SIZE_BYTES).putShort(short).array()
+
+    private fun packU16(int: Int): ByteArray = packU16(int.toShort())
 
     private fun packI32(int: Int): ByteArray = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(int).array()
 

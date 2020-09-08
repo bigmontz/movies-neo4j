@@ -14,3 +14,7 @@ Content-Type: application/json
 
 ### Getting health
 GET http://localhost:8080/actuator/health
+
+
+### Test endpoint
+GET http://localhost:8080/test

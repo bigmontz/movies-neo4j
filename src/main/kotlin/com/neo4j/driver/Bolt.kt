@@ -18,16 +18,16 @@ class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
     }
 
     private fun handshake(): Pair<Int, Int> {
-        writer.handshake(Pair(4, 0))
+        writer.handshake(Pair(4, 1))
         return reader.version()
     }
 
     private fun hello(user: String, password: String) {
         val credentials = mapOf(
-                "user_agent" to "movies",
+                "user_agent" to "movies/1",
                 "scheme" to "basic",
                 "principal" to user,
-                "password" to password)
+                "credentials" to password)
 
         writer.write(HELLO, credentials)
 
