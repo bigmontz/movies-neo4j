@@ -14,25 +14,37 @@ class BoltResult(
         private val writer: MessengerWriter,
         private val fields: List<String>) : Result {
 
-    private var hasNext: Boolean = true
 
     override fun list(): MutableList<Record> = stream().toList().toMutableList()
 
-    override fun stream(): Stream<Record> =
-            Stream.generate {
-                writer.write(MessageTags.PULL, mapOf("n" to -1))
-                reader.read()
-            }
-                    .takeWhile { (code, _) -> code == MessageTags.RECORD }
-                    .map { (_, record) -> BoltRecord(fields, record[0] as List<Any>) }
+    override fun stream(): Stream<Record> {
+        println("pull new data")
+        writer.write(MessageTags.PULL, mapOf("n" to -1))
+        return Stream.generate {
+            reader.read()
+        }
+                .takeWhile { (code, _) -> code == MessageTags.RECORD }
+                .map { (_, record) -> BoltRecord(fields, record[0] as List<Any>) }
+    }
 
     override fun keys(): MutableList<String> = fields.toMutableList()
+
+
+    override fun hasNext(): Boolean {
+        println("pull new data")
+        writer.write(MessageTags.PULL, mapOf("n" to 1))
+        val (code, fields) = reader.read()
+        if(code == MessageTags.SUCCESS) {
+            val field = fields[0] as Map<String, Any>
+            return (field["t_last"] as Byte).toInt() == 0
+        }
+        println("$code and $fields")
+        TODO("Not yet implemented")
+    }
 
     override fun remove() {
         TODO("Not yet implemented")
     }
-
-    override fun hasNext(): Boolean = hasNext
 
     override fun next(): Record {
         TODO("Not yet implemented")

@@ -53,7 +53,10 @@ class Packer {
 
     private fun packU16(int: Int): ByteArray = packU16(int.toShort())
 
-    private fun packI32(int: Int): ByteArray = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(int).array()
+    private fun packI32(int: Int): ByteArray {
+        val encoded = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(int).array()
+        return packU8(IntMarker.large) + encoded
+    }
 
 }
 

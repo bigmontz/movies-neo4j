@@ -7,8 +7,20 @@ import java.lang.RuntimeException
 
 class BoltTransaction(
         private val writer: MessengerWriter,
-        private val reader: MessengerReader
+        private val reader: MessengerReader,
+        autoCommit: Boolean = true
 ) : Transaction {
+    private var isOpen : Boolean
+
+    init {
+        isOpen = if (!autoCommit) {
+            writer.write(MessageTags.BEGIN, mapOf("mode" to "w"))
+            val (code, fields) = reader.read()
+            if(code != MessageTags.SUCCESS)
+                throw RuntimeException("Error start transaction: code=$code, fields=$fields")
+            true
+        } else false
+    }
 
     override fun run(query: String?, params: MutableMap<String, Any>?): Result {
         writer.write(MessageTags.RUN, query!!, params!!, mapOf<String, Any>())
@@ -25,12 +37,29 @@ class BoltTransaction(
     }
 
     override fun close() {
-        TODO("Not yet implemented")
+        if(isOpen()) {
+            rollback()
+        }
     }
 
-    override fun isOpen(): Boolean {
-        TODO("Not yet implemented")
+    override fun commit() {
+        writer.write(MessageTags.COMMIT)
+        val (code, fields) = reader.read()
+        isOpen = false
+        if(code != MessageTags.SUCCESS)
+            throw RuntimeException("Error committing transaction: code=$code, fields=$fields")
     }
+
+    override fun rollback() {
+        writer.write(MessageTags.ROLLBACK)
+        val (code, fields) = reader.read()
+        isOpen = false
+        if(code != MessageTags.SUCCESS)
+            throw RuntimeException("Error rolling back transaction: code=$code, fields=$fields")
+    }
+
+    override fun isOpen(): Boolean = isOpen
+
 
     override fun run(p0: String?, p1: Value?): Result {
         TODO("Not yet implemented")
@@ -48,13 +77,7 @@ class BoltTransaction(
         TODO("Not yet implemented")
     }
 
-    override fun commit() {
-        TODO("Not yet implemented")
-    }
 
-    override fun rollback() {
-        TODO("Not yet implemented")
-    }
 
 
 }

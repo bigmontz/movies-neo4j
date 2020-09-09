@@ -23,7 +23,9 @@ class UnPacker {
         in ListMarker.tinyRange -> unpackTinyList(byteArray)
         in STRUCT_MARKER_RANGE -> unpackStructure(byteArray)
         StringMarker.small -> unpackSmallString(byteArray)
+        StringMarker.medium -> unpackMediumString(byteArray)
         IntMarker.medium -> unpackShortBe(byteArray)
+        IntMarker.large -> unpackIntBe(byteArray)
         else -> throw UnsupportedOperationException("Type ${byteArray.first().toInt()} (${byteArray.first().str()}) is not valid")
     }
 
@@ -62,8 +64,13 @@ class UnPacker {
     }
 
     private fun unpackShortBe(byteArray: ByteArray): Pair<Int, Short> {
-        val value = ByteBuffer.wrap(byteArray.sliceArray(1..Short.SIZE_BYTES + 1)).short
+        val value = ByteBuffer.wrap(byteArray.sliceArray(1..Short.SIZE_BYTES)).short
         return Short.SIZE_BYTES + 1 to value
+    }
+
+    private fun unpackIntBe(byteArray: ByteArray): Pair<Int, Int> {
+        val value = ByteBuffer.wrap(byteArray.sliceArray(1..Int.SIZE_BYTES)).int
+        return Int.SIZE_BYTES + 1 to value
     }
 
     private fun unpackTinyMap(byteArray: ByteArray): Pair<Int, Any> {
@@ -88,8 +95,15 @@ class UnPacker {
 
     private fun unpackSmallString(byteArray: ByteArray): Pair<Int, Any> {
         val length = byteArray[1].unsignedInt()
-        val value = String(byteArray.sliceArray(2..length+1), charset = Charsets.UTF_8)
+        val value = String(byteArray.sliceArray(2..length + 1), charset = Charsets.UTF_8)
         return length + 2 to value
+    }
+
+
+    private fun unpackMediumString(byteArray: ByteArray): Pair<Int, String> {
+        val length = ByteBuffer.wrap(byteArray.sliceArray(1..2)).short.toUShort()
+        val value = String(byteArray.sliceArray(3..length.toInt() + 2), charset = Charsets.UTF_8 )
+        return length.toInt() + 3 to value
     }
 
     fun unpackU16(byteArray: ByteArray): Short = ByteBuffer.wrap(byteArray).getShort(0)

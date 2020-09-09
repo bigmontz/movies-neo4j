@@ -11,7 +11,7 @@ class ExperimentalDriverTransactionFactory(
 ) : TransactionFactory {
 
     override fun <T> read(consumer: (Transaction) -> T): T = createBolt().withAutoCommitTransaction(consumer)
-    override fun <T> write(consumer: (Transaction) -> T): T = createBolt().withAutoCommitTransaction(consumer)
+    override fun <T> write(consumer: (Transaction) -> T): T = createBolt().withWriteTransaction(consumer)
 
     private fun createBolt(): Bolt {
         return Bolt(host, port, credentials)

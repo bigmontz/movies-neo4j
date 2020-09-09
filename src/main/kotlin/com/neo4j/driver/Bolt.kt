@@ -26,6 +26,14 @@ class Bolt(host: String, port: Int, credentials: Credentials): AutoCloseable {
         return consumer(transaction)
     }
 
+    fun <T> withWriteTransaction(consumer: (Transaction) -> T) : T {
+        return BoltTransaction(writer, reader, false).use {
+            val result = consumer(it)
+            it.commit()
+            result
+        }
+    }
+
     private fun handshake(): Pair<Int, Int> {
         writer.handshake(Pair(4, 1))
         return reader.version()
