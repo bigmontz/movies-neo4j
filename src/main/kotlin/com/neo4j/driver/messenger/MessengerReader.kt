@@ -19,7 +19,7 @@ class MessengerReader(private val read: (Int) -> ByteArray, private val unPacker
         }
         val response = outputStream.toByteArray()
         val (fieldsMarker, tag) = response
-        val fieldsCount = fieldsMarker.unsignedInt() - FIELD_COUNT_MARKER
+        val fieldsCount = fieldsMarker.unsignedInt() - STRUCT_MARKER
         return tag.toInt() to unPacker.unpack(count = fieldsCount, byteArray = response.sliceArray(2 until response.size))
     }
 

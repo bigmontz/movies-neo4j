@@ -1,5 +1,6 @@
 package com.neo4j.driver.messenger
 
+import java.lang.IllegalArgumentException
 import java.lang.UnsupportedOperationException
 import java.nio.ByteBuffer
 import java.util.ArrayList
@@ -9,6 +10,7 @@ class Packer {
 
     fun pack(any: Any): ByteArray = when(any) {
         is Short -> packU16(any)
+        is Int -> packI32(any)
         is String -> packString(any)
         is Map<*, *> -> packMap(any as Map<String, Any>)
         is ArrayList<*> -> packList(any as ArrayList<Any>)
@@ -40,6 +42,7 @@ class Packer {
         SizeCategory.SMALL -> packU8(marker.small) + packU8(size)
         SizeCategory.MEDIUM -> packU8(marker.medium) + packU16(size)
         SizeCategory.LARGE -> packU8(marker.large) + packI32(size)
+        else -> throw IllegalArgumentException("Size $size is too big")
     }
 
     private fun packU8(int: Int): ByteArray  {

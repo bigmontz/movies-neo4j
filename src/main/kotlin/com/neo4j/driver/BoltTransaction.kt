@@ -3,6 +3,7 @@ package com.neo4j.driver
 import com.neo4j.driver.messenger.MessengerReader
 import com.neo4j.driver.messenger.MessengerWriter
 import org.neo4j.driver.*
+import java.lang.RuntimeException
 
 class BoltTransaction(
         private val writer: MessengerWriter,
@@ -12,8 +13,15 @@ class BoltTransaction(
     override fun run(query: String?, params: MutableMap<String, Any>?): Result {
         writer.write(MessageTags.RUN, query!!, params!!, mapOf<String, Any>())
         val (code, fields) = reader.read()
-        println("$code => $fields")
-        TODO("Not yet implemented :D")
+        if(code != MessageTags.SUCCESS)
+            throw RuntimeException("Error running the query: code=$code, $fields=$fields")
+        if(fields.isEmpty())
+            throw RuntimeException("Unexpected error, result fields are empty")
+        if(fields.first() !is Map<*, *>)
+            throw RuntimeException("Unexpected error Result field one is not a map")
+        val first = fields.first() as Map<String, Any>
+        val resultFields = first["fields"] as List<String>
+        return BoltResult(reader, writer, resultFields)
     }
 
     override fun close() {

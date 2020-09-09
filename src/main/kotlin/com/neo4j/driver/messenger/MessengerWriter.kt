@@ -23,7 +23,7 @@ class MessengerWriter(
 
     fun write(tag: Int, vararg fields: Any) {
         val buffer = ByteArrayOutputStream()
-        buffer.write(FIELD_COUNT_MARKER + fields.size)
+        buffer.write(STRUCT_MARKER + fields.size)
         buffer.write(tag)
         fields.forEach { buffer.write(packer.pack(it)) }
         writeInChunks(buffer.toByteArray())
