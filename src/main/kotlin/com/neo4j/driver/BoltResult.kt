@@ -5,6 +5,7 @@ import com.neo4j.driver.messenger.MessengerWriter
 import org.neo4j.driver.Record
 import org.neo4j.driver.Result
 import org.neo4j.driver.summary.ResultSummary
+import java.lang.RuntimeException
 import java.util.function.Function
 import java.util.stream.Stream
 import kotlin.streams.toList
@@ -14,11 +15,11 @@ class BoltResult(
         private val writer: MessengerWriter,
         private val fields: List<String>) : Result {
 
-
+    var next : Record? = null
+    
     override fun list(): MutableList<Record> = stream().toList().toMutableList()
 
     override fun stream(): Stream<Record> {
-        println("pull new data")
         writer.write(MessageTags.PULL, mapOf("n" to -1))
         return Stream.generate {
             reader.read()
@@ -29,26 +30,23 @@ class BoltResult(
 
     override fun keys(): MutableList<String> = fields.toMutableList()
 
-
     override fun hasNext(): Boolean {
-        println("pull new data")
         writer.write(MessageTags.PULL, mapOf("n" to 1))
-        val (code, fields) = reader.read()
+        val (code, result) = reader.read()
         if(code == MessageTags.SUCCESS) {
-            val field = fields[0] as Map<String, Any>
-            return (field["t_last"] as Byte).toInt() == 0
+            return false
+        } else if (code == MessageTags.RECORD) {
+            next = BoltRecord(fields = fields, record = result[0] as List<Any>)
+            return true
         }
-        println("$code and $fields")
-        TODO("Not yet implemented")
+        throw RuntimeException("Error during get next record. Code=${code}, Fields=${result}")
     }
 
     override fun remove() {
         TODO("Not yet implemented")
     }
 
-    override fun next(): Record {
-        TODO("Not yet implemented")
-    }
+    override fun next(): Record = next!!
 
     override fun single(): Record {
         TODO("Not yet implemented")
