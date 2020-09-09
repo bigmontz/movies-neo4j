@@ -16,7 +16,7 @@ class BoltResult(
         private val fields: List<String>) : Result {
 
     var next : Record? = null
-    
+
     override fun list(): MutableList<Record> = stream().toList().toMutableList()
 
     override fun stream(): Stream<Record> {

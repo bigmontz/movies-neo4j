@@ -44,6 +44,8 @@ Run the project and upload dataset:
 
 ```docker-compose -f docker-compose.yml -f docker-compose.dataset.yml up -d```
 
+To enable the experimental transaction, you should pass also `-f docker-compose.experimental.yml` to the `docker-compose up` command
+
 Stop the service
 
 ```docker-compose down```
