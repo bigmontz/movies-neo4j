@@ -1,6 +1,30 @@
 # movies-neo4j
 
-It's a simple api build on top of Neo4j Database and it's movie database sample. 
+It's a simple api build on top of Neo4j Database, and it's movie database sample. 
+
+The application uses the `neo4j-java-driver-spring-boot-starter` to manager the connection with the
+`database` by default. Thus, it uses the official driver. 
+
+However, an alternative version the driver implemented under the package 
+ `com.neo4j.driver` could be used by setting the environment variable 
+ `NEO4J_EXPERIMENTAL` to `true`. This version of the drivers doesn't fulfil all the 
+ capabilities of the official driver, but it implements part of the interfaces:
+ - Transaction
+ - Result
+ - Record
+ - Value
+ - Node
+ 
+Because of this, the swapping between the two implementations only impacts
+the configuration class `TransacationFactoryConfig`. 
+
+PS: Probably there are some corner cases which the new alternative driver
+will not handle well because of some unhandled packing and unpacking of data or
+something like that. 
+
+WARNING: The alternative version of the driver is an exercise to understand how 
+the Bolt protocol works, and it should be not used in production code
+
 
 ## Commands
 
@@ -24,9 +48,9 @@ Stop the service
 
 ```docker-compose down```
 
-Alternativetly, the project could runned using:
+Alternatively, the project could run using:
 
 ```docker-compose up -d neo4j``` to start the database
 ```./mvnw spring-boot:run``` to build and run the application
 
-It's usefull for development.
+It's useful for development.
